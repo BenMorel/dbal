@@ -33,9 +33,11 @@ class TransactionManager
     }
 
     /**
+     * @param \Doctrine\DBAL\TransactionDefinition $definition
+     *
      * @return \Doctrine\DBAL\Transaction
      */
-    public function createTransaction()
+    public function createTransaction(TransactionDefinition $definition)
     {
         $this->connection->connect();
 
