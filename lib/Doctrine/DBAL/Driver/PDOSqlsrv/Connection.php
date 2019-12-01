@@ -8,6 +8,7 @@ use Doctrine\DBAL\Driver\PDOConnection;
 use Doctrine\DBAL\Driver\PDOStatement;
 use function strpos;
 use function substr;
+use function var_export;
 
 /**
  * Sqlsrv Connection implementation.
