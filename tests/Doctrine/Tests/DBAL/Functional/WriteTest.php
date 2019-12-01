@@ -14,6 +14,7 @@ use Doctrine\Tests\TestUtil;
 use Throwable;
 use function array_filter;
 use function strtolower;
+use function var_export;
 
 class WriteTest extends DbalFunctionalTestCase
 {
@@ -163,7 +164,7 @@ class WriteTest extends DbalFunctionalTestCase
         $connection = TestUtil::getConnection();
 
         $this->expectException(DriverException::class);
-        $connection->lastInsertId();
+        var_export($connection->lastInsertId());
     }
 
     public function testGetSequenceNumber() : void
