@@ -6,11 +6,11 @@ namespace Doctrine\DBAL\Driver\PDOSqlsrv;
 
 use Doctrine\DBAL\Driver\PDOConnection;
 use Doctrine\DBAL\Driver\PDOStatement;
+use Exception;
+use function is_string;
 use function strpos;
 use function substr;
 use function var_export;
-use function is_string;
-use Exception;
 
 /**
  * Sqlsrv Connection implementation.
