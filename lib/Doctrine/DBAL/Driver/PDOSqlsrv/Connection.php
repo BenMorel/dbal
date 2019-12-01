@@ -9,6 +9,8 @@ use Doctrine\DBAL\Driver\PDOStatement;
 use function strpos;
 use function substr;
 use function var_export;
+use function is_string;
+use Exception;
 
 /**
  * Sqlsrv Connection implementation.
@@ -27,7 +29,7 @@ class Connection extends PDOConnection
 
         if (! is_string($sequenceNumber)) {
             var_export($sequenceNumber);
-            throw new \Exception('@todo');
+            throw new Exception('@todo');
         }
 
         return $sequenceNumber;
