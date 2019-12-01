@@ -22,7 +22,14 @@ class Connection extends PDOConnection
         $stmt = $this->prepare('SELECT CONVERT(VARCHAR(MAX), current_value) FROM sys.sequences WHERE name = ?');
         $stmt->execute([$name]);
 
-        return $stmt->fetchColumn();
+        $sequenceNumber = $stmt->fetchColumn();
+
+        if (! is_string($sequenceNumber)) {
+            var_export($sequenceNumber);
+            throw new \Exception('@todo');
+        }
+
+        return $sequenceNumber;
     }
 
     /**
