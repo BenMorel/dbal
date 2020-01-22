@@ -1209,9 +1209,13 @@ class QueryBuilder
      */
     private function getSQLForUpdate() : string
     {
-        return 'UPDATE ' . $this->table
-            . ' SET ' . implode(', ', $this->set)
-            . ($this->where !== null ? ' WHERE ' . ((string) $this->where) : '');
+        $query = 'UPDATE ' . $this->table . ' SET ' . implode(', ', $this->set);
+
+        if ($this->where !== null) {
+            $query .= ' WHERE ' . $this->where;
+        }
+
+        return $query;
     }
 
     /**
@@ -1219,7 +1223,13 @@ class QueryBuilder
      */
     private function getSQLForDelete() : string
     {
-        return 'DELETE FROM ' . $this->table . ($this->where !== null ? ' WHERE ' . ((string) $this->where) : '');
+        $query = 'DELETE FROM ' . $this->table;
+
+        if ($this->where !== null) {
+            $query .= ' WHERE ' . $this->where;
+        }
+
+        return $query;
     }
 
     /**
