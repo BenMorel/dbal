@@ -1108,14 +1108,33 @@ class QueryBuilder
      */
     private function getSQLForSelect() : string
     {
-        $query = 'SELECT ' . ($this->distinct ? 'DISTINCT ' : '') .
-                  implode(', ', $this->select);
+        $query = 'SELECT ';
 
-        $query .= ($this->from ? ' FROM ' . implode(', ', $this->getFromClauses()) : '')
-            . ($this->where !== null ? ' WHERE ' . ((string) $this->where) : '')
-            . ($this->groupBy ? ' GROUP BY ' . implode(', ', $this->groupBy) : '')
-            . ($this->having !== null ? ' HAVING ' . ((string) $this->having) : '')
-            . ($this->orderBy ? ' ORDER BY ' . implode(', ', $this->orderBy) : '');
+        if ($this->distinct) {
+            $query .= 'DISTINCT ';
+        }
+
+        $query .= implode(', ', $this->select);
+
+        if ($this->from) {
+            $query .= ' FROM ' . implode(', ', $this->getFromClauses());
+        }
+
+        if ($this->where) {
+            $query .= ' WHERE ' . $this->where;
+        }
+
+        if ($this->groupBy) {
+            $query .= ' GROUP BY ' . implode(', ', $this->groupBy);
+        }
+
+        if ($this->having) {
+            $query .= ' HAVING ' . $this->having;
+        }
+
+        if ($this->orderBy) {
+            $query .= ' ORDER BY ' . implode(', ', $this->orderBy);
+        }
 
         if ($this->isLimitQuery()) {
             return $this->connection->getDatabasePlatform()->modifyLimitQuery(
