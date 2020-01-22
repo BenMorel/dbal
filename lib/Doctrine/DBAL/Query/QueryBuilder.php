@@ -156,7 +156,7 @@ class QueryBuilder
      *
      * @var CompositeExpression|null
      */
-    private $where = null;
+    private $where;
 
     /**
      * The GROUP BY part of a SELECT query.
@@ -170,7 +170,7 @@ class QueryBuilder
      *
      * @var CompositeExpression|null
      */
-    private $having = null;
+    private $having;
 
     /**
      * The ORDER BY parts of a SELECT query.
