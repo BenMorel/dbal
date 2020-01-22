@@ -1318,20 +1318,22 @@ class QueryBuilder
     {
         $sql = '';
 
-        if (isset($this->join[$fromAlias])) {
-            foreach ($this->join[$fromAlias] as $join) {
-                if (array_key_exists($join->alias, $knownAliases)) {
-                    throw NonUniqueAlias::new($join->alias, array_keys($knownAliases));
-                }
-                $sql                       .= ' ' . $join->type
-                    . ' JOIN ' . $join->table . ' ' . $join->alias
-                    . ' ON ' . ((string) $join->condition);
-                $knownAliases[$join->alias] = true;
-            }
+        if (! isset($this->join[$fromAlias])) {
+            return $sql;
+        }
 
-            foreach ($this->join[$fromAlias] as $join) {
-                $sql .= $this->getSQLForJoins($join->alias, $knownAliases);
+        foreach ($this->join[$fromAlias] as $join) {
+            if (array_key_exists($join->alias, $knownAliases)) {
+                throw NonUniqueAlias::new($join->alias, array_keys($knownAliases));
             }
+            $sql                       .= ' ' . $join->type
+                . ' JOIN ' . $join->table . ' ' . $join->alias
+                . ' ON ' . ((string) $join->condition);
+            $knownAliases[$join->alias] = true;
+        }
+
+        foreach ($this->join[$fromAlias] as $join) {
+            $sql .= $this->getSQLForJoins($join->alias, $knownAliases);
         }
 
         return $sql;
