@@ -327,6 +327,9 @@ class QueryBuilderTest extends DbalTestCase
 
         self::assertSame($qb, $qb2);
         self::assertEquals(QueryBuilder::SELECT, $qb->getType());
+
+        self::expectException(QueryException::class);
+        $qb->getSQL();
     }
 
     public function testSelectAddSelect() : void

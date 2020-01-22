@@ -1108,6 +1108,10 @@ class QueryBuilder
      */
     private function getSQLForSelect() : string
     {
+        if (! $this->select) {
+            throw new QueryException('No SELECT expressions given. Please use select() or addSelect().');
+        }
+
         $query = 'SELECT';
 
         if ($this->distinct) {
