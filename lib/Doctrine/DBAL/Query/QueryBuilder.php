@@ -1159,7 +1159,6 @@ class QueryBuilder
         $fromClauses  = [];
         $knownAliases = [];
 
-        // Loop through all FROM clauses
         foreach ($this->from as $from) {
             if ($from->alias === null || $from->alias === $from->table) {
                 $tableSql       = $from->table;
