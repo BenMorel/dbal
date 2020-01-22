@@ -1108,13 +1108,13 @@ class QueryBuilder
      */
     private function getSQLForSelect() : string
     {
-        $query = 'SELECT ';
+        $query = 'SELECT';
 
         if ($this->distinct) {
-            $query .= 'DISTINCT ';
+            $query .= ' DISTINCT';
         }
 
-        $query .= implode(', ', $this->select);
+        $query .= ' ' . implode(', ', $this->select);
 
         if ($this->from) {
             $query .= ' FROM ' . implode(', ', $this->getFromClauses());
