@@ -154,7 +154,7 @@ class QueryBuilder
     /**
      * The WHERE part of a SELECT, UPDATE or DELETE query.
      *
-     * @var CompositeExpression|null
+     * @var string|CompositeExpression|null
      */
     private $where;
 
@@ -168,7 +168,7 @@ class QueryBuilder
     /**
      * The HAVING part of a SELECT query.
      *
-     * @var CompositeExpression|null
+     * @var string|CompositeExpression|null
      */
     private $having;
 
@@ -1013,10 +1013,12 @@ class QueryBuilder
      *
      * @param string|CompositeExpression $predicate
      * @param string|CompositeExpression ...$predicates
+     *
+     * @return string|CompositeExpression
      */
-    private function createPredicate($predicate, ...$predicates) : CompositeExpression
+    private function createPredicate($predicate, ...$predicates)
     {
-        if ($predicate instanceof CompositeExpression && ! $predicates) {
+        if (! $predicates) {
             return $predicate;
         }
 
@@ -1024,18 +1026,25 @@ class QueryBuilder
     }
 
     /**
-     * Appends the given predicates combined by the given type of logic to the given query clause.
+     * Appends the given predicates combined by the given type of logic to the current predicate.
      *
-     * @param string|CompositeExpression ...$predicates
+     * @param string|CompositeExpression|null $currentPredicate
+     * @param string|CompositeExpression      ...$predicates
+     *
+     * @return string|CompositeExpression
      */
-    private function appendToPredicate(?CompositeExpression $predicate, string $type, ...$predicates) : CompositeExpression
+    private function appendToPredicate($currentPredicate, string $type, ...$predicates)
     {
-        if ($predicate !== null) {
-            if ($predicate->getType() === $type) {
-                return $predicate->addMultiple($predicates);
-            }
+        if ($currentPredicate === null && count($predicates) === 1) {
+            return $predicates[0];
+        }
 
-            array_unshift($predicates, $predicate);
+        if ($currentPredicate instanceof CompositeExpression && $currentPredicate->getType() === $type) {
+            return $currentPredicate->addMultiple($predicates);
+        }
+
+        if ($currentPredicate !== null) {
+            array_unshift($predicates, $currentPredicate);
         }
 
         return new CompositeExpression($type, $predicates);
@@ -1342,11 +1351,11 @@ class QueryBuilder
             }
         }
 
-        if ($this->where !== null) {
+        if (is_object($this->where)) {
             $this->where = clone $this->where;
         }
 
-        if ($this->having !== null) {
+        if (is_object($this->having)) {
             $this->having = clone $this->having;
         }
 
