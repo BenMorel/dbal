@@ -787,11 +787,7 @@ class QueryBuilder
      */
     public function where($predicate, ...$predicates) : self
     {
-        if ($predicate instanceof CompositeExpression && ! $predicates) {
-            $this->where = $predicate;
-        } else {
-            $this->where = new CompositeExpression(CompositeExpression::TYPE_AND, array_merge([$predicate], $predicates));
-        }
+        $this->where = $this->createPredicate($predicate, ...$predicates);
 
         $this->state = self::STATE_DIRTY;
 
@@ -819,17 +815,7 @@ class QueryBuilder
      */
     public function andWhere($predicate, ...$predicates) : self
     {
-        $allPredicates = array_merge([$predicate], $predicates);
-
-        if ($this->where !== null && $this->where->getType() === CompositeExpression::TYPE_AND) {
-            $this->where->addMultiple($allPredicates);
-        } else {
-            if ($this->where !== null) {
-                array_unshift($allPredicates, $this->where);
-            }
-
-            $this->where = new CompositeExpression(CompositeExpression::TYPE_AND, $allPredicates);
-        }
+        $this->where = $this->appendToPredicate($this->where, CompositeExpression::TYPE_AND, $predicate, ...$predicates);
 
         $this->state = self::STATE_DIRTY;
 
@@ -857,17 +843,7 @@ class QueryBuilder
      */
     public function orWhere($predicate, ...$predicates) : self
     {
-        $allPredicates = array_merge([$predicate], $predicates);
-
-        if ($this->where !== null && $this->where->getType() === CompositeExpression::TYPE_OR) {
-            $this->where->addMultiple($allPredicates);
-        } else {
-            if ($this->where !== null) {
-                array_unshift($allPredicates, $this->where);
-            }
-
-            $this->where = new CompositeExpression(CompositeExpression::TYPE_OR, $allPredicates);
-        }
+        $this->where = $this->appendToPredicate($this->where, CompositeExpression::TYPE_OR, $predicate, ...$predicates);
 
         $this->state = self::STATE_DIRTY;
 
@@ -989,11 +965,7 @@ class QueryBuilder
      */
     public function having($predicate, ...$predicates) : self
     {
-        if ($predicate instanceof CompositeExpression && ! $predicates) {
-            $this->having = $predicate;
-        } else {
-            $this->having = new CompositeExpression(CompositeExpression::TYPE_AND, array_merge([$predicate], $predicates));
-        }
+        $this->having = $this->createPredicate($predicate, ...$predicates);
 
         $this->state = self::STATE_DIRTY;
 
@@ -1011,17 +983,7 @@ class QueryBuilder
      */
     public function andHaving($predicate, ...$predicates) : self
     {
-        $allPredicates = array_merge([$predicate], $predicates);
-
-        if ($this->having !== null && $this->having->getType() === CompositeExpression::TYPE_AND) {
-            $this->having->addMultiple($allPredicates);
-        } else {
-            if ($this->having !== null) {
-                array_unshift($allPredicates, $this->having);
-            }
-
-            $this->having = new CompositeExpression(CompositeExpression::TYPE_AND, $allPredicates);
-        }
+        $this->having = $this->appendToPredicate($this->having, CompositeExpression::TYPE_AND, $predicate, ...$predicates);
 
         $this->state = self::STATE_DIRTY;
 
@@ -1039,21 +1001,44 @@ class QueryBuilder
      */
     public function orHaving($predicate, ...$predicates) : self
     {
-        $allPredicates = array_merge([$predicate], $predicates);
-
-        if ($this->having !== null && $this->having->getType() === CompositeExpression::TYPE_OR) {
-            $this->having->addMultiple($allPredicates);
-        } else {
-            if ($this->having !== null) {
-                array_unshift($allPredicates, $this->having);
-            }
-
-            $this->having = new CompositeExpression(CompositeExpression::TYPE_OR, $allPredicates);
-        }
+        $this->having = $this->appendToPredicate($this->having, CompositeExpression::TYPE_OR, $predicate, ...$predicates);
 
         $this->state = self::STATE_DIRTY;
 
         return $this;
+    }
+
+    /**
+     * Creates a CompositeExpression from one or more predicates combined by the AND logic.
+     *
+     * @param string|CompositeExpression $predicate
+     * @param string|CompositeExpression ...$predicates
+     */
+    private function createPredicate($predicate, ...$predicates) : CompositeExpression
+    {
+        if ($predicate instanceof CompositeExpression && ! $predicates) {
+            return $predicate;
+        }
+
+        return new CompositeExpression(CompositeExpression::TYPE_AND, array_merge([$predicate], $predicates));
+    }
+
+    /**
+     * Appends the given predicates combined by the given type of logic to the given query clause.
+     *
+     * @param string|CompositeExpression ...$predicates
+     */
+    private function appendToPredicate(?CompositeExpression $predicate, string $type, ...$predicates) : CompositeExpression
+    {
+        if ($predicate !== null) {
+            if ($predicate->getType() === $type) {
+                return $predicate->addMultiple($predicates);
+            }
+
+            array_unshift($predicates, $predicate);
+        }
+
+        return new CompositeExpression($type, $predicates);
     }
 
     /**
