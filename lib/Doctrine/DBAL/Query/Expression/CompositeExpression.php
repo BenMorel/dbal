@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Doctrine\DBAL\Query\Expression;
 
-use Countable;
-use function count;
 use function implode;
 
 /**
  * Composite expression is responsible to build a group of similar expression.
  */
-class CompositeExpression implements Countable
+class CompositeExpression extends Expression
 {
     /**
      * Constant that represents an AND composite expression.
@@ -24,7 +22,7 @@ class CompositeExpression implements Countable
     public const TYPE_OR = 'OR';
 
     /**
-     * The instance type of composite expression.
+     * The instance type of composite expression (AND/OR).
      *
      * @var string
      */
@@ -33,65 +31,39 @@ class CompositeExpression implements Countable
     /**
      * Each expression part of the composite expression.
      *
-     * @var self[]|string[]
+     * @var Expression[]
      */
     private $parts = [];
 
     /**
-     * @param string          $type  Instance type of composite expression.
-     * @param self[]|string[] $parts Composition of expressions to be joined on composite expression.
+     * @param string|Expression $a
+     * @param string|Expression $b
+     * @param string|Expression ...$more
      */
-    public function __construct(string $type, array $parts = [])
+    public function __construct(string $type, $a, $b, ...$more)
     {
-        $this->type = $type;
+        array_unshift($more, $a, $b);
 
-        $this->addMultiple($parts);
+        $this->type  = $type;
+        $this->parts = array_map([Expression::class, 'wrap'], $more);
     }
 
-    /**
-     * Adds multiple parts to composite expression.
-     *
-     * @param array<int, self|string> $parts
-     *
-     * @return $this
-     */
-    public function addMultiple(array $parts = []) : self
+    public function and($expr) : Expression
     {
-        foreach ($parts as $part) {
-            $this->add($part);
+        if ($this->type === self::TYPE_AND) {
+            return new CompositeExpression(self::TYPE_AND, ...array_merge($this->parts, [$expr]));
         }
 
-        return $this;
+        return new CompositeExpression(self::TYPE_AND, $this, $expr);
     }
 
-    /**
-     * Adds an expression to composite expression.
-     *
-     * @param self|string $part
-     *
-     * @return $this
-     */
-    public function add($part) : self
+    public function or($expr) : Expression
     {
-        if (empty($part)) {
-            return $this;
+        if ($this->type === self::TYPE_OR) {
+            return new CompositeExpression(self::TYPE_OR, ...array_merge($this->parts, [$expr]));
         }
 
-        if ($part instanceof self && count($part) === 0) {
-            return $this;
-        }
-
-        $this->parts[] = $part;
-
-        return $this;
-    }
-
-    /**
-     * Retrieves the amount of expressions on composite expression.
-     */
-    public function count() : int
-    {
-        return count($this->parts);
+        return new CompositeExpression(self::TYPE_OR, $this, $expr);
     }
 
     /**
@@ -99,11 +71,11 @@ class CompositeExpression implements Countable
      */
     public function __toString() : string
     {
-        if ($this->count() === 1) {
-            return (string) $this->parts[0];
-        }
+        $parts = array_map(function(Expression $part) {
+            return '(' . $part . ')';
+        }, $this->parts);
 
-        return '(' . implode(') ' . $this->type . ' (', $this->parts) . ')';
+        return implode(' ' . $this->type . ' ', $parts);
     }
 
     /**

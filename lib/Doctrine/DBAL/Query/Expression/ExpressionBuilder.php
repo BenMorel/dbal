@@ -46,11 +46,19 @@ class ExpressionBuilder
      *     // (u.type = ?) AND (u.role = ?)
      *     $expr->andX('u.type = ?', 'u.role = ?'));
      *
-     * @param string|CompositeExpression ...$expressions Requires at least one defined when converting to string.
+     * @param string|Expression $a
+     * @param string|Expression $b
+     * @param string|Expression ...$more
      */
-    public function andX(...$expressions) : CompositeExpression
+    public function andX($expression, ...$expressions) : Expression
     {
-        return new CompositeExpression(CompositeExpression::TYPE_AND, $expressions);
+        $result = Expression::wrap($expression);
+
+        foreach ($expressions as $expression) {
+            $result = $result->and($expression);
+        }
+
+        return $result;
     }
 
     /**
@@ -62,11 +70,18 @@ class ExpressionBuilder
      *     // (u.type = ?) OR (u.role = ?)
      *     $qb->where($qb->expr()->orX('u.type = ?', 'u.role = ?'));
      *
-     * @param string|CompositeExpression ...$expressions Requires at least one defined when converting to string.
+     * @param string|Expression $expression
+     * @param string|Expression ...$expressions
      */
-    public function orX(...$expressions) : CompositeExpression
+    public function orX($expression, ...$expressions) : Expression
     {
-        return new CompositeExpression(CompositeExpression::TYPE_OR, $expressions);
+        $result = Expression::wrap($expression);
+
+        foreach ($expressions as $expression) {
+            $result = $result->or($expression);
+        }
+
+        return $result;
     }
 
     /**

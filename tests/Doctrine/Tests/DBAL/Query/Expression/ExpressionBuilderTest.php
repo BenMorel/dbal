@@ -7,6 +7,7 @@ namespace Doctrine\Tests\DBAL\Query\Expression;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\Expression\CompositeExpression;
 use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
+use Doctrine\DBAL\Query\Expression\SingleExpression;
 use Doctrine\Tests\DbalTestCase;
 
 /**
@@ -35,11 +36,7 @@ class ExpressionBuilderTest extends DbalTestCase
      */
     public function testAndX(array $parts, string $expected) : void
     {
-        $composite = $this->expr->andX();
-
-        foreach ($parts as $part) {
-            $composite->add($part);
-        }
+        $composite = $this->expr->andX(...$parts);
 
         self::assertEquals($expected, (string) $composite);
     }
@@ -71,7 +68,8 @@ class ExpressionBuilderTest extends DbalTestCase
                     'u.user = 1',
                     new CompositeExpression(
                         CompositeExpression::TYPE_OR,
-                        ['u.group_id = 1', 'u.group_id = 2']
+                        'u.group_id = 1',
+                        'u.group_id = 2'
                     ),
                 ],
                 '(u.user = 1) AND ((u.group_id = 1) OR (u.group_id = 2))',
@@ -81,7 +79,8 @@ class ExpressionBuilderTest extends DbalTestCase
                     'u.group_id = 1',
                     new CompositeExpression(
                         CompositeExpression::TYPE_AND,
-                        ['u.user = 1', 'u.group_id = 2']
+                        'u.user = 1',
+                        'u.group_id = 2'
                     ),
                 ],
                 '(u.group_id = 1) AND ((u.user = 1) AND (u.group_id = 2))',
@@ -96,11 +95,7 @@ class ExpressionBuilderTest extends DbalTestCase
      */
     public function testOrX(array $parts, string $expected) : void
     {
-        $composite = $this->expr->orX();
-
-        foreach ($parts as $part) {
-            $composite->add($part);
-        }
+        $composite = $this->expr->orX(...$parts);
 
         self::assertEquals($expected, (string) $composite);
     }
@@ -132,7 +127,8 @@ class ExpressionBuilderTest extends DbalTestCase
                     'u.user = 1',
                     new CompositeExpression(
                         CompositeExpression::TYPE_OR,
-                        ['u.group_id = 1', 'u.group_id = 2']
+                        'u.group_id = 1',
+                        'u.group_id = 2'
                     ),
                 ],
                 '(u.user = 1) OR ((u.group_id = 1) OR (u.group_id = 2))',
@@ -142,7 +138,8 @@ class ExpressionBuilderTest extends DbalTestCase
                     'u.group_id = 1',
                     new CompositeExpression(
                         CompositeExpression::TYPE_AND,
-                        ['u.user = 1', 'u.group_id = 2']
+                        'u.user = 1',
+                        'u.group_id = 2'
                     ),
                 ],
                 '(u.group_id = 1) OR ((u.user = 1) AND (u.group_id = 2))',

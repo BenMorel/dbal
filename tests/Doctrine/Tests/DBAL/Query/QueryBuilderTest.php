@@ -70,9 +70,9 @@ class QueryBuilderTest extends DbalTestCase
 
         $qb->select('u.id')
            ->from('users', 'u')
-           ->where($expr->andX($expr->eq('u.nickname', '?')));
+           ->where($expr->andX($expr->eq('u.id', '?'), $expr->eq('u.nickname', '?')));
 
-        self::assertEquals('SELECT u.id FROM users u WHERE u.nickname = ?', (string) $qb);
+        self::assertEquals('SELECT u.id FROM users u WHERE (u.id = ?) AND (u.nickname = ?)', (string) $qb);
     }
 
     public function testSelectWithLeftJoin() : void
