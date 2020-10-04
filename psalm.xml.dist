@@ -105,6 +105,12 @@
                 <file name="src/Exception/DriverException.php"/>
             </errorLevel>
         </ImpureMethodCall>
+        <InternalMethod>
+            <errorLevel type="suppress">
+                <!-- addToAssertionCount() is internal but not deprecated -->
+                <file name="tests/Functional/WriteTest.php"/>
+            </errorLevel>
+        </InternalMethod>
         <ForbiddenCode>
             <errorLevel type="suppress">
                 <!-- The call to var_dump() here is by design -->

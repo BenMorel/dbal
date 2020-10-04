@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Doctrine\DBAL\Driver\PDO;
 
 use Doctrine\DBAL\Driver\Exception as ExceptionInterface;
+use Doctrine\DBAL\Driver\Exception\IdentityColumnsNotSupported;
+use Doctrine\DBAL\Driver\Exception\NoIdentityValue;
 use Doctrine\DBAL\Driver\Result as ResultInterface;
 use Doctrine\DBAL\Driver\ServerInfoAwareConnection;
 use Doctrine\DBAL\Driver\Statement as StatementInterface;
@@ -88,13 +90,45 @@ final class Connection implements ServerInfoAwareConnection
         return $this->connection->quote($value);
     }
 
-    public function lastInsertId(): string
+    /**
+     * {@inheritDoc}
+     */
+    public function lastInsertId()
     {
+        $driverName = $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME);
+
+        if ($driverName === 'oci') {
+            throw IdentityColumnsNotSupported::new();
+        }
+
         try {
-            return $this->connection->lastInsertId();
+            $lastInsertId = $this->connection->lastInsertId();
         } catch (PDOException $exception) {
+            [$sqlState] = $exception->errorInfo;
+
+            // PDO PGSQL throws a 'lastval is not yet defined in this session' error when no identity value is
+            // available, with SQLSTATE 55000 'Object Not In Prerequisite State'
+            if ($sqlState === '55000' && $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql') {
+                throw NoIdentityValue::new($exception);
+            }
+
             throw Exception::new($exception);
         }
+
+        if (! $this->isValidLastInsertId($lastInsertId)) {
+            throw NoIdentityValue::new();
+        }
+
+        return $lastInsertId;
+    }
+
+    /**
+     * @param int|string $value
+     */
+    private function isValidLastInsertId($value): bool
+    {
+        // pdo_mysql & pdo_sqlite return 0 or '0', pdo_sqlsrv returns ''
+        return $value !== 0 && $value !== '0' && $value !== '';
     }
 
     /**
