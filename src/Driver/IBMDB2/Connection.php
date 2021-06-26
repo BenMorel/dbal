@@ -109,7 +109,7 @@ final class Connection implements ServerInfoAwareConnection
     {
         $lastInsertId = db2_last_insert_id($this->conn);
 
-        if ($lastInsertId === '') {
+        if ($lastInsertId === null) {
             throw Exception\NoIdentityValue::new();
         }
 
